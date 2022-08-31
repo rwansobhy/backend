@@ -1,0 +1,42 @@
+version: "3.5" 
+services:
+  db:
+    image: postgres
+    networks:
+      - exceed  
+    volumes:
+      - development-database-volume:/var/lib/postgresql/data
+
+    environment:
+      POSTGRES_USER: exceed
+      POSTGRES_PASSWORD: exceed
+      POSTGRES_DB: exceed_timeline_development
+    ports:
+      - 5433:5432  
+  web:
+    image: exceed-backend
+    container_name: exceed-backend
+    networks:
+      - exceed
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: /app/docker-entrypoint.sh
+    command: "bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+      - ~/.ssh:/root/.ssh
+      - ~/.gitconfig:/root/.gitconfig
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+volumes:
+  development-database-volume:
+  bundle:
+networks:
+  exceed:
+    name: exceed
+    driver: bridge 
